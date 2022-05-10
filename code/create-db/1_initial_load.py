@@ -380,6 +380,7 @@ def load_db(password: str, original: list[str], expansion: list[str]):
             processed_files_tsize = 0
             for tweet_file_name in tweet_file_names:
                 is_original = tweet_file_name in original
+                logging.info(f"Starting to process {'original' if original else 'expanded'} file {tweet_file_name}.")
                 with open(tweet_file_name, "rt") as tweet_file:
                     for chunk_number, pages in enumerate(chunked(yield_pages(tweet_file, is_original), 10)):
                         tweets = list(itertools.chain.from_iterable(map(lambda page: page[0], pages)))
