@@ -335,8 +335,10 @@ def yield_pages(tweet_file: TextIO, original: bool) -> Iterable[tuple[Iterable[T
 
 
 @click.option('-p', '--password', required=True, help="database password")
+@click.option('-o', '--original', required=True, multiple=True, help="file names of jsonl files containing the tweets in the original sample")
+@click.option('-e', '--expansion', multiple=True, help="file names of jsonl files containing tweets from expanded conversations", default=[])
 @click.command
-def load_db(password: str):
+def load_db(password: str, original: list[str], expansion: list[str]):
     """Load tweets into the database"""
     with closing(mariadb.connect(user="convoy",
                                  password=password,
@@ -372,15 +374,14 @@ def load_db(password: str):
                                  database="convoy",
                                  autocommit=True)) as cur:
             cur: RecoveringCursor
-            tweet_file_names = ["data/convoy_2weeks.jsonl", "data/convoy_conversations.jsonl",
-                                "data/convoy_conversations_unprocessed.jsonl"]
+            tweet_file_names = original + expansion
             tsize = reduce(lambda tsize, tweet_file_name: tsize + os.path.getsize(tweet_file_name), tweet_file_names, 0)
             pbar = tqdm.tqdm(total=tsize, unit='b', unit_scale=True, unit_divisor=1024)
             processed_files_tsize = 0
             for tweet_file_name in tweet_file_names:
-                original = tweet_file_name == "data/convoy_2weeks.jsonl"
+                is_original = tweet_file_name in original
                 with open(tweet_file_name, "rt") as tweet_file:
-                    for chunk_number, pages in enumerate(chunked(yield_pages(tweet_file, original), 10)):
+                    for chunk_number, pages in enumerate(chunked(yield_pages(tweet_file, is_original), 10)):
                         tweets = list(itertools.chain.from_iterable(map(lambda page: page[0], pages)))
                         cur.executemany(Tweet.insert_stmt, [tweet.as_tuple() for tweet in tweets])
                         cur.executemany(Tweet.insert_hashtags_stmt, list(
