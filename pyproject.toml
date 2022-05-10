@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "convoy"
+version = "0.1.0"
+description = ""
+authors = ["Eetu Mäkelä <eetu.makela@iki.fi>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+twarc = "^2.10.4"
+twarc-csv = "^0.5.2"
+more-itertools = "^8.12.0"
+mariadb = "^1.0.11"
+mysql-connector-python= "^8.0.29"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
